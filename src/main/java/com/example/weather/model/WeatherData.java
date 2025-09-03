@@ -1,12 +1,8 @@
 package com.example.weather.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 @Getter
-@RequiredArgsConstructor
 @Builder
 public class WeatherData {
     private final double minTemp;

@@ -8,12 +8,11 @@ public class ForecastResponse {
     public Forecast forecast;
 
     public static class Forecast {
-        public List<ForecastDay> forecastday;
+        @SerializedName("forecastday")
+        public List<ForecastDay> forecastDays;
     }
 
     public static class ForecastDay {
-        @SerializedName("date")
-        public String date;
         public DayInfo day;
         public List<HourInfo> hour;
     }
@@ -21,13 +20,17 @@ public class ForecastResponse {
     public static class DayInfo {
         @SerializedName("maxtemp_c")
         public double maxTemp;
-        public double mintemp_c;
-        public double maxwind_kph;
-        public double avghumidity;
+        @SerializedName("mintemp_c")
+        public double minTemp;
+        @SerializedName("maxwind_kph")
+        public double maxWindKph;
+        @SerializedName("avghumidity")
+        public double avgHumidity;
     }
 
     public static class HourInfo {
-        public String wind_dir;
+        @SerializedName("wind_dir")
+        public String windDir;
     }
 
 }
