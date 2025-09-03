@@ -19,7 +19,7 @@ public class WeatherApp {
         WeatherService service = new WeatherService(apiKey);
         String tomorrow = LocalDate.now().plusDays(1).toString();
 
-        // Table header
+
         System.out.printf("%-12s | %-12s | %-12s | %-12s | %-12s | %-15s%n",
                 "City", "Date", "Min Temp (°C)", "Max Temp (°C)",
                 "Humidity (%)", "Wind (kph/dir)");
@@ -28,7 +28,7 @@ public class WeatherApp {
         for (String city : CITIES) {
             WeatherData data = service.getForecast(city, tomorrow);
             if (data != null) {
-                System.out.printf("%-12s | %-12s | %-12.1f | %-12.1f | %-12.1f | %.1f / %s%n",
+                System.out.printf("%-12s | %-12s | %-12.1f | %-12.1f | %-12.1f | %.1f | %s%n",
                         city, tomorrow,
                         data.getMinTemp(),
                         data.getMaxTemp(),

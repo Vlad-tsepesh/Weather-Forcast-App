@@ -3,6 +3,8 @@ package com.example.weather.service;
 import com.example.weather.client.WeatherApi;
 import com.example.weather.model.*;
 
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -12,14 +14,14 @@ import java.util.*;
 public class WeatherService {
     private final WeatherApi api;
     private final String apiKey;
+    private static final String BASE_URL = "http://api.weatherapi.com/v1/";
 
     public WeatherService(String apiKey) {
         this.apiKey = apiKey;
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://api.weatherapi.com/v1/")
+        this.api = new Retrofit.Builder()
+                .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        this.api = retrofit.create(WeatherApi.class);
+                .build().create(WeatherApi.class);
     }
 
     public WeatherData getForecast(String city, String date) {
@@ -28,15 +30,15 @@ public class WeatherService {
             if (response == null || response.forecast == null || response.forecast.forecastday.isEmpty())
                 return null;
 
-            ForecastDay fd = response.forecast.forecastday.get(0);
+            ForecastResponse.ForecastDay fd = response.forecast.forecastday.get(0);
             double minTemp = fd.day.mintemp_c;
-            double maxTemp = fd.day.maxtemp_c;
+            double maxTemp = fd.day.maxTemp;
             double humidity = fd.day.avghumidity;
             double windSpeed = fd.day.maxwind_kph;
 
             // most common wind direction
             Map<String, Integer> freq = new HashMap<>();
-            for (HourInfo h : fd.hour) {
+            for (ForecastResponse.HourInfo h : fd.hour) {
                 freq.put(h.wind_dir, freq.getOrDefault(h.wind_dir, 0) + 1);
             }
             String windDir = freq.entrySet().stream()
