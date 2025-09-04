@@ -1,33 +1,45 @@
 package com.example.weather.infrastructure.api;
 
-import com.example.weather.infrastructure.api.exception.WeatherApiException;
-import com.example.weather.infrastructure.api.dto.WeatherForecastRequest;
+import com.example.weather.domain.model.WeatherData;
+import com.example.weather.application.port.WeatherForecastProvider;
 import com.example.weather.infrastructure.api.dto.WeatherForecastResponse;
+import com.example.weather.infrastructure.api.exception.NoForecastAvailableException;
+import com.example.weather.infrastructure.api.exception.WeatherApiException;
 import com.example.weather.infrastructure.config.WeatherConfig;
+import com.example.weather.infrastructure.mapper.WeatherForecastMapper;
 import lombok.RequiredArgsConstructor;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.util.Optional;
 
 @RequiredArgsConstructor
-public class WeatherApiClient {
+public class WeatherApiClient implements WeatherForecastProvider {
 
-    private final static String BASE_URL = "http://api.weatherapi.com/v1/";
     private final WeatherConfig config;
-    private final WeatherApi api = new Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(WeatherApi.class);
+    private final WeatherApi api;
+    private final WeatherForecastMapper mapper;
 
-    public WeatherForecastResponse fetchForecast(WeatherForecastRequest request) {
+    public WeatherData fetchForecast(String city, LocalDate date ) {
+        Optional<WeatherForecastResponse> responseOptional = fetchRowForecast(city, date);
+        var forecast = responseOptional
+                .map(response -> response.forecast)
+                .orElseThrow(() ->
+                        new NoForecastAvailableException(city));
+
+        return mapper.toWeatherData(forecast);
+    }
+
+
+    public Optional<WeatherForecastResponse> fetchRowForecast(String city, LocalDate date) {
         try {
-            return api.getForecast(config.getApiKey(), request.getCity(), request.getDate())
-                    .execute()
-                    .body();
+            var responseDto = api.getForecast(config.getApiKey(), city, date.toString())
+                    .execute();
+
+            return Optional.ofNullable(responseDto.body());
+
         } catch (IOException e) {
-            throw new WeatherApiException("Failed to fetch forecast for " + request.getCity(), e);
+            throw new WeatherApiException("Failed to fetch forecast for " + city, e);
         }
     }
 }

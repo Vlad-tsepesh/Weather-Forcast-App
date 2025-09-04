@@ -1,43 +1,38 @@
 package com.example.weather.infrastructure.output;
 
-import com.example.weather.domain.model.WeatherData;
-import de.vandermeer.asciitable.AsciiTable;
-import de.vandermeer.asciitable.CWC_LongestLine;
-import de.vandermeer.skb.interfaces.transformers.textformat.TextAlignment;
+import com.example.weather.application.port.HeaderExtractor;
+import com.example.weather.application.port.RowExtractor;
+import com.example.weather.application.port.TableRenderer;
+import com.example.weather.application.port.WeatherReportWriter;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class WeatherReportPrinter {
+@RequiredArgsConstructor
+public class WeatherReportPrinter implements WeatherReportWriter {
 
-    public void generateWeatherReport(List<String> cities, List<WeatherData> dataList) {
-        AsciiTable table = new AsciiTable();
-        table.addRule();
-        table.addRow("City", "Date", "Minimum Temperature (°C)", "Maximum Temperature (°C)", "Humidity (%)", "Wind Speed (kph)", "Wind Direction");
-        table.addRule();
+    private final HeaderExtractor headerExtractor;
+    private final RowExtractor rowExtractor;
+    private final TableRenderer tableRenderer;
 
-        for (int i = 0; i < cities.size(); i++) {
-            table.addRow(buildRow(cities.get(i),dataList.get(i)));
-            table.addRule();
-        }
-        table.setTextAlignment(TextAlignment.CENTER);
-        table.getRenderer().setCWC(new CWC_LongestLine());
-        table.setPaddingLeftRight(1);
-        System.out.println(table.render());
+
+    public void writeReport(List<?> reportRows) {
+        if (reportRows.isEmpty()) return;
+
+        List<String> headers = extractHeaders(reportRows);
+        List<List<String>> rows = extractRows(reportRows);
+
+        tableRenderer.render(headers, rows);
     }
 
-    private Object[] buildRow(String city, WeatherData data) {
-        if (data != null) {
-            return new Object[]{
-                    city,
-                    data.getDate(),
-                    data.getMinTemp(),
-                    data.getMaxTemp(),
-                    data.getHumidity(),
-                    data.getWindSpeed(),
-                    data.getWindDir()
-            };
-        } else {
-            return new Object[]{city, "N/A", "N/A", "N/A", "N/A", "N/A"};
-        }
+    private List<String> extractHeaders(List<?> reportRows) {
+        return headerExtractor.extractHeaders(reportRows.get(0).getClass());
+    }
+
+    private List<List<String>> extractRows(List<?> reportRows) {
+        return reportRows.stream()
+                .map(rowExtractor::extractRow)
+                .collect(Collectors.toList());
     }
 }

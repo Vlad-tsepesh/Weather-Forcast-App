@@ -1,7 +1,7 @@
 package com.example.weather.application;
 
 import com.example.weather.infrastructure.api.WeatherApiClient;
-import com.example.weather.infrastructure.api.dto.WeatherForecastRequest;
+import com.example.weather.domain.model.WeatherForecastRequest;
 import com.example.weather.infrastructure.mapper.WeatherForecastMapper;
 import com.example.weather.domain.model.WeatherData;
 
@@ -65,7 +65,7 @@ public interface WeatherApi {
 }
 package com.example.weather.infrastructure.api;
 
-import com.example.weather.infrastructure.api.dto.WeatherForecastRequest;
+import com.example.weather.domain.model.WeatherForecastRequest;
 import com.example.weather.infrastructure.api.dto.WeatherForecastResponse;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -282,13 +282,13 @@ public class WeatherReportPrinter {
 }
 package com.example.weather;
 
-import com.example.weather.application.WeatherForecastUseCase;
+import com.example.weather.application.usecase.WeatherForecastUseCase;
 import com.example.weather.domain.model.WeatherData;
 import com.example.weather.infrastructure.api.WeatherApiClient;
 import com.example.weather.infrastructure.config.WeatherConfig;
 import com.example.weather.infrastructure.mapper.WeatherForecastMapper;
 import com.example.weather.infrastructure.output.WeatherReportPrinter;
-import com.example.weather.infrastructure.api.dto.WeatherForecastRequest;
+import com.example.weather.domain.model.WeatherForecastRequest;
 
 import java.util.List;
 
