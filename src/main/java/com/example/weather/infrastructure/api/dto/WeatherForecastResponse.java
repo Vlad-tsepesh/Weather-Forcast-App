@@ -1,10 +1,10 @@
-package com.example.weather.model;
+package com.example.weather.infrastructure.api.dto;
 
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-public class ForecastResponse {
+public class WeatherForecastResponse {
     public Forecast forecast;
 
     public static class Forecast {
@@ -13,6 +13,7 @@ public class ForecastResponse {
     }
 
     public static class ForecastDay {
+        public String date;
         public DayInfo day;
         @SerializedName("hour")
         public List<HourInfo> hours;
