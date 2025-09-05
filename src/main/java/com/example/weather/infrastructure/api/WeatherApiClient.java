@@ -1,7 +1,7 @@
 package com.example.weather.infrastructure.api;
 
-import com.example.weather.domain.model.WeatherData;
 import com.example.weather.application.port.WeatherForecastProvider;
+import com.example.weather.domain.model.WeatherData;
 import com.example.weather.infrastructure.api.dto.WeatherForecastResponse;
 import com.example.weather.infrastructure.api.exception.NoForecastAvailableException;
 import com.example.weather.infrastructure.api.exception.WeatherApiException;
@@ -20,7 +20,7 @@ public class WeatherApiClient implements WeatherForecastProvider {
     private final WeatherApi api;
     private final WeatherForecastMapper mapper;
 
-    public WeatherData fetchForecast(String city, LocalDate date ) {
+    public WeatherData fetchForecast(String city, LocalDate date) {
         Optional<WeatherForecastResponse> responseOptional = fetchRowForecast(city, date);
         var forecast = responseOptional
                 .map(response -> response.forecast)

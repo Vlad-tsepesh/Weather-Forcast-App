@@ -11,7 +11,7 @@ public class WeatherConfig {
     private final Properties props = new Properties();
 
     public WeatherConfig() {
-        try (InputStream input = getClass().getClassLoader().getResourceAsStream(CONFIG_FILE)) {
+        try (InputStream input = getResourceAsStream()) {
             if (input == null) {
                 throw new RuntimeException("Config file not found: " + CONFIG_FILE);
             }
@@ -19,6 +19,10 @@ public class WeatherConfig {
         } catch (IOException e) {
             throw new RuntimeException("Failed to load config file", e);
         }
+    }
+
+    protected InputStream getResourceAsStream() {
+        return getClass().getClassLoader().getResourceAsStream(WeatherConfig.CONFIG_FILE);
     }
 
     public List<String> getCities() {

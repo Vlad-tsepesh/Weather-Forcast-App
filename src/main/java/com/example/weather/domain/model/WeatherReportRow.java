@@ -2,13 +2,23 @@ package com.example.weather.domain.model;
 
 import com.example.weather.domain.annotation.Column;
 import lombok.Builder;
+import lombok.Getter;
 
+@Getter
 @Builder
-public record WeatherReportRow(@Column("City") String city,
-                               @Column("Date") String date,
-                               @Column("Minimum Temperature (°C)") double minTemp,
-                               @Column("Maximum Temperature (°C)") double maxTemp,
-                               @Column("Humidity (%)") double humidity,
-                               @Column("Wind Speed (kph)") double windSpeed,
-                               @Column("Wind Direction") String windDirection) {
+public class WeatherReportRow {
+    @Column("City")
+    private final String city;
+    @Column("Date")
+    private final String date;
+    @Column("Minimum Temperature (°C)")
+    private final double minTemp;
+    @Column("Maximum Temperature (°C)")
+    private final double maxTemp;
+    @Column("Humidity (%)")
+    private final double humidity;
+    @Column("Wind Speed (kph)")
+    private final double windSpeed;
+    @Column("Wind Direction")
+    private final String windDirection;
 }

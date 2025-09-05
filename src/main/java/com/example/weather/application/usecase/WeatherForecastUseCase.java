@@ -18,8 +18,7 @@ public class WeatherForecastUseCase {
     private final WeatherReportBuilder reportBuilder;
     private final WeatherReportWriter reportWriter;
 
-
-    public void runForecastForTomorrow(List<String> cities) {
+    public String runForecastForTomorrow(List<String> cities) {
         LocalDate tomorrow = LocalDate.now().plusDays(1);
         List<WeatherReportRow> reportRows = new ArrayList<>();
 
@@ -28,7 +27,7 @@ public class WeatherForecastUseCase {
             reportRows.addAll(reportBuilder.buildRows(city, weatherData));
         }
 
-        reportWriter.writeReport(reportRows);
+        return reportWriter.writeReport(reportRows);
     }
 
 }

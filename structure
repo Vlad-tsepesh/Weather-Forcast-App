@@ -1,0 +1,48 @@
+com.example.weather
+│
+├── WeatherApp                → entry point (manual wiring)
+│
+├── application
+│   ├── port                   → interfaces (ports)
+│   │   ├── HeaderExtractor
+│   │   ├── RowExtractor
+│   │   ├── TableRenderer
+│   │   ├── WeatherForecastProvider
+│   │   └── WeatherReportWriter
+│   │
+│   └── usecase
+│       └── WeatherForecastUseCase → orchestrates workflow (fetch → build → write)
+│
+├── domain
+│   ├── annotation
+│   │   └── Column              → marks fields for table output
+│   │
+│   ├── model
+│   │   ├── WeatherData         → domain forecast data (record)
+│   │   ├── WeatherReportRow    → row in final report (record)
+│   │
+│   └── service
+│       ├── WeatherReportBuilder → builds report rows from domain model
+│       └── WindAnalyzer         → calculates most common wind direction
+│
+├── infrastructure
+│   ├── api                     → external weather API client
+│   │   ├── WeatherApi          → Retrofit interface
+│   │   ├── WeatherApiClient    → implements WeatherForecastProvider
+│   │   ├── dto                 → WeatherForecastResponse (DTOs for JSON mapping)
+│   │   └── exception           → WeatherApiException, NoForecastAvailableException
+│   │
+│   ├── config
+│   │   ├── RetrofitFactory     → builds Retrofit instance
+│   │   └── WeatherConfig       → loads config.properties
+│   │
+│   ├── extractor
+│   │   ├── ColumnAnnotationHeaderExtractor → implements HeaderExtractor
+│   │   └── ReflectionRowExtractor          → implements RowExtractor
+│   │
+│   ├── mapper
+│   │   └── WeatherForecastMapper → maps API DTO → domain WeatherData (MapStruct)
+│   │
+│   └── output
+│       ├── AsciiTableRenderer   → renders tables to console (implements TableRenderer)
+│       └── WeatherReportPrinter → implements WeatherReportWriter (header + rows + renderer)

@@ -13,20 +13,20 @@ public class WeatherReportBuilder {
         this.windAnalyzer = windAnalyzer;
     }
 
-    public WeatherReportRow buildRow(String city, WeatherData.ForecastDay day) {
+    public WeatherReportRow buildRow(String city, WeatherData.ForecastDay forecastDay) {
         return WeatherReportRow.builder()
                 .city(city)
-                .date(day.date())
-                .minTemp(day.day().minTemp())
-                .maxTemp(day.day().maxTemp())
-                .humidity(day.day().avgHumidity())
-                .windSpeed(day.day().maxWindKph())
-                .windDirection(windAnalyzer.mostCommonDirection(day.hours()))
+                .date(forecastDay.getDate())
+                .minTemp(forecastDay.getDay().getMinTemp())
+                .maxTemp(forecastDay.getDay().getMaxTemp())
+                .humidity(forecastDay.getDay().getAvgHumidity())
+                .windSpeed(forecastDay.getDay().getAvgHumidity())
+                .windDirection(windAnalyzer.mostCommonDirection(forecastDay.getHours()))
                 .build();
     }
 
     public List<WeatherReportRow> buildRows(String city, WeatherData weatherData) {
-        return weatherData.forecastDays().stream()
+        return weatherData.getForecastDays().stream()
                 .map(day -> buildRow(city, day))
                 .toList();
     }
