@@ -21,8 +21,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 
 @ExtendWith(MockitoExtension.class)
 class WeatherApiClientTest {
@@ -36,79 +34,85 @@ class WeatherApiClientTest {
     @Mock
     private WeatherForecastMapper mapper;
 
-    @Mock
-    private Call<WeatherForecastResponse> call; // Retrofit call mock
-
     @InjectMocks
     private WeatherApiClient client;
 
-    private String apiKey = "test-key";
-    private String city = "London";
-    private LocalDate date = LocalDate.now();
-
-    private WeatherForecastResponse.Forecast forecastDto;
-    private WeatherForecastResponse responseDto;
-    private WeatherData mappedWeatherData;
+    private String city;
+    private LocalDate date;
 
     @BeforeEach
-    void setUp() throws IOException {
-        // Common DTO setup
-        forecastDto = new WeatherForecastResponse.Forecast();
-        responseDto = new WeatherForecastResponse();
-        responseDto.forecast = forecastDto;
-
-        mappedWeatherData = mock(WeatherData.class);
-
-        // Mock config to always return API key
-        when(config.getApiKey()).thenReturn(apiKey);
-
-        // Mock Retrofit API call
-        when(api.getForecast(anyString(), anyString(), anyString())).thenReturn(call);
-        when(call.execute()).thenReturn(Response.success(responseDto));
-
-        // Mock mapper
-        when(mapper.toWeatherData(any(WeatherForecastResponse.Forecast.class))).thenReturn(mappedWeatherData);
+    void setUp() {
+        city = "London";
+        date = LocalDate.now();
     }
 
     @Test
-    void fetchForecast_success_returnsMappedWeatherData() {
+    void fetchForecast_success_returnsMappedWeatherData() throws IOException {
+        // Prepare DTOs
+        WeatherForecastResponse.Forecast forecastDto = new WeatherForecastResponse.Forecast();
+        WeatherForecastResponse responseDto = new WeatherForecastResponse();
+        responseDto.forecast = forecastDto;
+
+        // Mock dependencies
+        when(config.getApiKey()).thenReturn("test-key");
+        Call<WeatherForecastResponse> call = mock(Call.class);
+        when(api.getForecast("test-key", city, date.toString())).thenReturn(call);
+        when(call.execute()).thenReturn(Response.success(responseDto));
+
+        WeatherData mapped = mock(WeatherData.class);
+        when(mapper.toWeatherData(forecastDto)).thenReturn(mapped);
+
+        // Execute
         WeatherData result = client.fetchForecast(city, date);
 
-        assertSame(mappedWeatherData, result);
-
-        // Verify interactions
-        verify(config).getApiKey();
-        verify(api).getForecast(apiKey, city, date.toString());
+        // Verify
+        assertSame(mapped, result);
+        verify(api).getForecast("test-key", city, date.toString());
         verify(mapper).toWeatherData(forecastDto);
     }
 
     @Test
     void fetchForecast_noForecast_throwsNoForecastAvailableException() throws IOException {
-        // Simulate API returns body null
+        Call<WeatherForecastResponse> call = mock(Call.class);
+
+        when(config.getApiKey()).thenReturn("test-key");
+        when(api.getForecast("test-key", city, date.toString())).thenReturn(call);
         when(call.execute()).thenReturn(Response.success(null));
 
         assertThrows(NoForecastAvailableException.class, () -> client.fetchForecast(city, date));
 
-        verify(api).getForecast(apiKey, city, date.toString());
-        verify(mapper, never()).toWeatherData(any());
+        verify(api).getForecast("test-key", city, date.toString());
     }
 
     @Test
-    void fetchRowForecast_success_returnsOptional() {
+    void fetchRowForecast_success_returnsOptional() throws IOException {
+        WeatherForecastResponse responseDto = new WeatherForecastResponse();
+        Call<WeatherForecastResponse> call = mock(Call.class);
+
+        when(config.getApiKey()).thenReturn("test-key");
+        when(api.getForecast("test-key", city, date.toString())).thenReturn(call);
+        when(call.execute()).thenReturn(Response.success(responseDto));
+
         Optional<WeatherForecastResponse> result = client.fetchRowForecast(city, date);
 
         assertTrue(result.isPresent());
-        assertEquals(responseDto, result.get());
+        assertSame(responseDto, result.get());
 
-        verify(api).getForecast(apiKey, city, date.toString());
+        verify(api).getForecast("test-key", city, date.toString());
     }
 
     @Test
     void fetchRowForecast_ioException_throwsWeatherApiException() throws IOException {
+        Call<WeatherForecastResponse> call = mock(Call.class);
+
+        when(config.getApiKey()).thenReturn("test-key");
+        when(api.getForecast("test-key", city, date.toString())).thenReturn(call);
         when(call.execute()).thenThrow(new IOException("Network error"));
 
-        assertThrows(WeatherApiException.class, () -> client.fetchRowForecast(city, date));
+        WeatherApiException ex = assertThrows(WeatherApiException.class,
+                () -> client.fetchRowForecast(city, date));
 
-        verify(api).getForecast(apiKey, city, date.toString());
+        assertTrue(ex.getMessage().contains("Failed to fetch forecast"));
+        verify(api).getForecast("test-key", city, date.toString());
     }
 }
