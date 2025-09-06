@@ -20,7 +20,7 @@ public class WeatherReportBuilder {
                 .minTemp(forecastDay.getDay().getMinTemp())
                 .maxTemp(forecastDay.getDay().getMaxTemp())
                 .humidity(forecastDay.getDay().getAvgHumidity())
-                .windSpeed(forecastDay.getDay().getAvgHumidity())
+                .windSpeed(forecastDay.getDay().getMaxWindKph())
                 .windDirection(windAnalyzer.mostCommonDirection(forecastDay.getHours()))
                 .build();
     }

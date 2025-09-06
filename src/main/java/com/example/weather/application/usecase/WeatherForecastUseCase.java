@@ -26,9 +26,7 @@ public class WeatherForecastUseCase {
             WeatherData weatherData = forecastProvider.fetchForecast(city, tomorrow);
             reportRows.addAll(reportBuilder.buildRows(city, weatherData));
         }
-
         return reportWriter.writeReport(reportRows);
     }
-
 }
 

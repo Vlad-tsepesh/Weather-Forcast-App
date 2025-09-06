@@ -56,7 +56,7 @@ class WeatherReportBuilderTest {
         assertEquals(10.5, row.getMinTemp());
         assertEquals(20.3, row.getMaxTemp());
         assertEquals(55.0, row.getHumidity());
-        assertEquals(55.0, row.getWindSpeed());
+        assertEquals(15.0, row.getWindSpeed());
         assertEquals("N", row.getWindDirection());
 
         verify(windAnalyzer).mostCommonDirection(forecastDay.getHours());

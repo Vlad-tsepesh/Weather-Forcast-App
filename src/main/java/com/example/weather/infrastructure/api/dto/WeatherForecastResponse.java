@@ -34,5 +34,4 @@ public class WeatherForecastResponse {
         @SerializedName("wind_dir")
         public String windDir;
     }
-
 }

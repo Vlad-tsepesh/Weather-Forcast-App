@@ -34,6 +34,9 @@ class WeatherApiClientTest {
     @Mock
     private WeatherForecastMapper mapper;
 
+    @Mock
+    private Call<WeatherForecastResponse> call;
+
     @InjectMocks
     private WeatherApiClient client;
 
@@ -48,24 +51,19 @@ class WeatherApiClientTest {
 
     @Test
     void fetchForecast_success_returnsMappedWeatherData() throws IOException {
-        // Prepare DTOs
         WeatherForecastResponse.Forecast forecastDto = new WeatherForecastResponse.Forecast();
         WeatherForecastResponse responseDto = new WeatherForecastResponse();
         responseDto.forecast = forecastDto;
 
-        // Mock dependencies
         when(config.getApiKey()).thenReturn("test-key");
-        Call<WeatherForecastResponse> call = mock(Call.class);
         when(api.getForecast("test-key", city, date.toString())).thenReturn(call);
         when(call.execute()).thenReturn(Response.success(responseDto));
 
         WeatherData mapped = mock(WeatherData.class);
         when(mapper.toWeatherData(forecastDto)).thenReturn(mapped);
 
-        // Execute
         WeatherData result = client.fetchForecast(city, date);
 
-        // Verify
         assertSame(mapped, result);
         verify(api).getForecast("test-key", city, date.toString());
         verify(mapper).toWeatherData(forecastDto);
@@ -73,8 +71,6 @@ class WeatherApiClientTest {
 
     @Test
     void fetchForecast_noForecast_throwsNoForecastAvailableException() throws IOException {
-        Call<WeatherForecastResponse> call = mock(Call.class);
-
         when(config.getApiKey()).thenReturn("test-key");
         when(api.getForecast("test-key", city, date.toString())).thenReturn(call);
         when(call.execute()).thenReturn(Response.success(null));
@@ -87,7 +83,6 @@ class WeatherApiClientTest {
     @Test
     void fetchRowForecast_success_returnsOptional() throws IOException {
         WeatherForecastResponse responseDto = new WeatherForecastResponse();
-        Call<WeatherForecastResponse> call = mock(Call.class);
 
         when(config.getApiKey()).thenReturn("test-key");
         when(api.getForecast("test-key", city, date.toString())).thenReturn(call);
@@ -103,8 +98,6 @@ class WeatherApiClientTest {
 
     @Test
     void fetchRowForecast_ioException_throwsWeatherApiException() throws IOException {
-        Call<WeatherForecastResponse> call = mock(Call.class);
-
         when(config.getApiKey()).thenReturn("test-key");
         when(api.getForecast("test-key", city, date.toString())).thenReturn(call);
         when(call.execute()).thenThrow(new IOException("Network error"));
