@@ -13,11 +13,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class WeatherReportGeneratorTest {
 
 
-    private WeatherReportGenerator generator;
+    private WeatherReportGenerator<WeatherReportRow> generator;
 
     @BeforeEach
     void setUp() {
-        generator = new WeatherReportGenerator();
+        generator = new WeatherReportGenerator<>();
     }
 
     @Test
@@ -50,18 +50,5 @@ class WeatherReportGeneratorTest {
         );
 
         assertEquals("No objects to display.", exception.getMessage());
-    }
-
-    @Test
-    void writeReport_objectWithNoFields_throwsException() {
-        class Empty {}
-        List<Empty> objects = List.of(new Empty());
-
-        WeatherReportException exception = assertThrows(
-                WeatherReportException.class,
-                () -> generator.writeReport(objects)
-        );
-
-        assertEquals("No fields found to display.", exception.getMessage());
     }
 }

@@ -3,6 +3,7 @@ package com.example.weather;
 import com.example.weather.application.port.WeatherForecastProvider;
 import com.example.weather.application.port.WeatherReportWriter;
 import com.example.weather.application.usecase.WeatherForecastUseCase;
+import com.example.weather.domain.model.WeatherReportRow;
 import com.example.weather.domain.service.WeatherReportBuilder;
 import com.example.weather.domain.service.WindAnalyzer;
 import com.example.weather.infrastructure.api.WeatherApiClient;
@@ -18,7 +19,7 @@ public class WeatherApp {
         WeatherForecastProvider apiClient = new WeatherApiClient(config, RetrofitFactory.createWeatherApi(), mapper);
         WindAnalyzer windAnalyzer = new WindAnalyzer();
         WeatherReportBuilder reportBuilder = new WeatherReportBuilder(windAnalyzer);
-        WeatherReportWriter reportWriter = new WeatherReportGenerator();
+        WeatherReportWriter<WeatherReportRow> reportWriter = new WeatherReportGenerator<>();
         WeatherForecastUseCase useCase = new WeatherForecastUseCase(apiClient, reportBuilder,reportWriter);
 
         String weatherReport = useCase.runForecastForTomorrow(config.getCities());

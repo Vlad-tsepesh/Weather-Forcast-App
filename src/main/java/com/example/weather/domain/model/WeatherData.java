@@ -17,7 +17,6 @@ public class WeatherData {
         private final String date;
         private final DayInfo day;
         private final List<HourInfo> hours;
-        private final double windDir;
     }
 
     @Getter

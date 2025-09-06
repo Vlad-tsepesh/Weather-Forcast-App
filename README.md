@@ -1,146 +1,136 @@
-# WeatherApp
+# Weather Forecast Application
 
-A modular, non-Spring Java application that fetches weather forecasts from [WeatherAPI](https://www.weatherapi.com/), builds domain-level weather reports, and renders them as ASCII tables in the console.  
-The design follows a **hexagonal architecture** (ports and adapters), keeping business logic independent from infrastructure.
-
----
-
-## Features
-
-- Fetches weather forecasts for one or more cities from WeatherAPI.
-- Builds structured domain models (`WeatherData`, `WeatherReportRow`) with temperature, humidity, wind speed, and wind direction.
-- Determines most common wind direction using `WindAnalyzer`.
-- Generates tabular weather reports with headers derived from `@Column` annotations.
-- Renders output as ASCII tables in the console.
+This project fetches weather forecasts for a list of cities from [WeatherAPI](https://www.weatherapi.com/) and generates a tabular ASCII weather report.
 
 ---
 
-## Project Structure
+## 👂 Project Structure
 
 ```
 com.example.weather
 │
-├── WeatherApp                → entry point (manual wiring)
-│
 ├── application
-│   ├── port                   → interfaces (ports)
-│   │   ├── HeaderExtractor
-│   │   ├── RowExtractor
-│   │   ├── TableRenderer
-│   │   ├── WeatherForecastProvider
-│   │   └── WeatherReportWriter
-│   │
+│   ├── port
+│   │   ├── WeatherForecastProvider.java   # Interface for fetching weather data
+│   │   └── WeatherReportWriter.java       # Interface for writing reports
 │   └── usecase
-│       └── WeatherForecastUseCase → orchestrates workflow (fetch → build → write)
+│       └── WeatherForecastUseCase.java    # Orchestrates fetching, building, and reporting
 │
 ├── domain
 │   ├── annotation
-│   │   └── Column              → marks fields for table output
-│   │
+│   │   └── Column.java                    # Annotation for custom column names
+│   ├── marker
+│   │   └── Reportable.java                # Marker interface for reportable entities
 │   ├── model
-│   │   ├── WeatherData         → domain forecast data (record)
-│   │   ├── WeatherReportRow    → row in final report (record)
-│   │
+│   │   ├── WeatherData.java               # Domain model for forecast data
+│   │   └── WeatherReportRow.java          # Entity representing a report row
 │   └── service
-│       ├── WeatherReportBuilder → builds report rows from domain model
-│       └── WindAnalyzer         → calculates most common wind direction
+│       ├── WeatherReportBuilder.java      # Builds report rows from forecast data
+│       └── WindAnalyzer.java              # Analyzes most common wind direction
 │
 ├── infrastructure
-│   ├── api                     → external weather API client
-│   │   ├── WeatherApi          → Retrofit interface
-│   │   ├── WeatherApiClient    → implements WeatherForecastProvider
-│   │   ├── dto                 → WeatherForecastResponse (DTOs for JSON mapping)
-│   │   └── exception           → WeatherApiException, NoForecastAvailableException
-│   │
+│   ├── api
+│   │   ├── WeatherApi.java                # Retrofit API definition
+│   │   ├── WeatherApiClient.java          # API client implementation
+│   │   ├── dto
+│   │   │   └── WeatherForecastResponse.java # DTO mapping API JSON response
+│   │   └── exception
+│   │       ├── NoForecastAvailableException.java
+│   │       ├── WeatherApiException.java
+│   │       └── WeatherReportException.java
 │   ├── config
-│   │   ├── RetrofitFactory     → builds Retrofit instance
-│   │   └── WeatherConfig       → loads config.properties
-│   │
-│   ├── extractor
-│   │   ├── ColumnAnnotationHeaderExtractor → implements HeaderExtractor
-│   │   └── ReflectionRowExtractor          → implements RowExtractor
-│   │
+│   │   ├── RetrofitFactory.java           # Creates Retrofit instance
+│   │   └── WeatherConfig.java             # Loads API key and cities
 │   ├── mapper
-│   │   └── WeatherForecastMapper → maps API DTO → domain WeatherData (MapStruct)
-│   │
+│   │   └── WeatherForecastMapper.java     # MapStruct mapper: DTO → Domain model
 │   └── output
-│       ├── AsciiTableRenderer   → renders tables to console (implements TableRenderer)
-│       └── WeatherReportPrinter → implements WeatherReportWriter (header + rows + renderer)                # Report rendering and printing
+│       └── WeatherReportGenerator.java    # ASCII table report generator
+│
+└── WeatherApp.java                        # Application entry point
 ```
 
 ---
 
-## Flow
+## 🔹 Requirements
 
-1. `WeatherApp.main` wires dependencies.
-2. `WeatherForecastUseCase.runForecastForTomorrow` executes:
-   - Calls `WeatherForecastProvider` → implemented by `WeatherApiClient` → fetches `WeatherData`.
-   - Builds rows with `WeatherReportBuilder` and `WindAnalyzer`.
-   - Delegates to `WeatherReportWriter` (`WeatherReportPrinter`) for output.
-3. `WeatherReportPrinter`:
-   - Extracts headers from `@Column` annotations.
-   - Extracts row values via reflection.
-   - Passes headers + rows to `TableRenderer` (`AsciiTableRenderer`) → returns ASCII table as String object.
+- Java 17+
+- Maven
+- Internet connection (for WeatherAPI)
+- Valid WeatherAPI key
 
 ---
 
-## Configuration
+## ⚙️ Setup
 
-The app loads settings from `config.properties` (classpath resource):
+1. Clone the repository:
+
+```bash
+git clone https://github.com/yourusername/weather-app.git
+cd weather-app
+```
+
+2. Add your WeatherAPI key to `config.properties`:
 
 ```properties
 WEATHER_API_KEY=your_api_key_here
-cities=London,Berlin,Paris
+cities=Paris,London,Berlin
 ```
 
-- `WEATHER_API_KEY`: API key from [WeatherAPI](https://www.weatherapi.com/).  
-- `cities`: Comma-separated list of city names.  
-
----
-
-## Run
-
-1. Add your `config.properties` file to `src/main/resources/`.
-2. Build the project with Maven:
+3. Build the project:
 
 ```bash
-mvn clean package
+mvn clean install
 ```
 
-3. Run the JAR:
+---
+
+## 🏃 Running the Application
+
+Run the main class:
 
 ```bash
-java -jar target/weatherapp-1.0-SNAPSHOT.jar
+java -cp target/weather-app-1.0-SNAPSHOT.jar com.example.weather.WeatherApp
+```
+
+Output: ASCII table of tomorrow's weather forecasts for configured cities.
+
+---
+
+## 🔹 Example Report
+
+```
++--------+------------+-------------------------+-------------------------+---------------+------------------+----------------+
+|  City  |    Date    | Minimum Temperature (°C)| Maximum Temperature (°C)| Humidity (%)  | Wind Speed (kph) | Wind Direction |
++--------+------------+-------------------------+-------------------------+---------------+------------------+----------------+
+| Paris  | 2025-09-08 | 12.5                    | 21.3                    | 65.0          | 14.0             | SW             |
+| London | 2025-09-08 | 11.0                    | 20.0                    | 60.0          | 12.5             | NW             |
++--------+------------+-------------------------+-------------------------+---------------+------------------+----------------+
 ```
 
 ---
 
-## Example Output
+## 📝 Key Concepts
 
-```
-┌───────────┬────────────┬──────────────────────────┬──────────────────────────┬──────────────┬──────────────────┬────────────────┐
-│   City    │    Date    │ Minimum Temperature (°C) │ Maximum Temperature (°C) │ Humidity (%) │ Wind Speed (kph) │ Wind Direction │
-├───────────┼────────────┼──────────────────────────┼──────────────────────────┼──────────────┼──────────────────┼────────────────┤
-│ Chisinau  │ 2025-09-06 │           14.5           │           30.9           │     30.0     │       30.0       │       NE       │
-├───────────┼────────────┼──────────────────────────┼──────────────────────────┼──────────────┼──────────────────┼────────────────┤
-│  Madrid   │ 2025-09-06 │           18.8           │           34.0           │     45.0     │       45.0       │       E        │
-├───────────┼────────────┼──────────────────────────┼──────────────────────────┼──────────────┼──────────────────┼────────────────┤
-│   Kyiv    │ 2025-09-06 │           16.3           │           27.5           │     41.0     │       41.0       │       E        │
-├───────────┼────────────┼──────────────────────────┼──────────────────────────┼──────────────┼──────────────────┼────────────────┤
-│ Amsterdam │ 2025-09-06 │           11.6           │           23.3           │     62.0     │       62.0       │      SSE       │
-└───────────┴────────────┴──────────────────────────┴──────────────────────────┴──────────────┴──────────────────┴────────────────┘
-```
+- **Clean Architecture**
+  - `application`: Ports & use cases
+  - `domain`: Core models & business logic
+  - `infrastructure`: API, mappers, report generator
+
+- **Type Safety**
+  - `WeatherReportWriter<T extends Reportable>` ensures only reportable entities are used for reports.
+
+- **Extensibility**
+  - Add new report formats by implementing `WeatherReportWriter`.
+  - Add new API providers by implementing `WeatherForecastProvider`.
 
 ---
 
-## Technologies Used
+## ⚡ Dependencies
 
-- **Java 17+**
-- **Retrofit2** (HTTP client)
-- **Gson** (JSON deserialization)
-- **MapStruct** (DTO → domain mapping)
-- **Apache Commons Lang** (reflection utilities)
-- **AsciiTable** (console table rendering)
-- **Lombok** (builders, annotations)
+- Retrofit + Gson (API client)
+- MapStruct (DTO → domain mapping)
+- Asciitable (`de.vandermeer.asciitable`) for ASCII table generation
+- Apache Commons Lang (`FieldUtils`) for reflection
 
 ---
+

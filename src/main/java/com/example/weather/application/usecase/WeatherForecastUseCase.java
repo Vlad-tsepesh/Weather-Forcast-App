@@ -16,7 +16,7 @@ public class WeatherForecastUseCase {
 
     private final WeatherForecastProvider forecastProvider;
     private final WeatherReportBuilder reportBuilder;
-    private final WeatherReportWriter reportWriter;
+    private final WeatherReportWriter<WeatherReportRow> reportWriter;
 
     public String runForecastForTomorrow(List<String> cities) {
         LocalDate tomorrow = LocalDate.now().plusDays(1);

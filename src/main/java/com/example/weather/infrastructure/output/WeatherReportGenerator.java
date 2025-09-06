@@ -2,6 +2,7 @@ package com.example.weather.infrastructure.output;
 
 import com.example.weather.application.port.WeatherReportWriter;
 import com.example.weather.domain.annotation.Column;
+import com.example.weather.domain.marker.Reportable;
 import com.example.weather.infrastructure.api.exception.WeatherReportException;
 import de.vandermeer.asciitable.AsciiTable;
 import de.vandermeer.asciitable.CWC_LongestLine;
@@ -13,10 +14,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-public class WeatherReportGenerator implements WeatherReportWriter {
+public class WeatherReportGenerator<T extends Reportable> implements WeatherReportWriter<T> {
 
     @Override
-    public String writeReport(List<?> objects) {
+    public String writeReport(List<T> objects) {
         validate(objects);
 
         Field[] fields = objects.get(0).getClass().getDeclaredFields();
@@ -27,14 +28,14 @@ public class WeatherReportGenerator implements WeatherReportWriter {
         return renderAsciiTable(headers, rows);
     }
 
-    private void validate(List<?> objects) {
+    private void validate(List<T> objects) {
         if (objects == null || objects.isEmpty()) {
             throw new WeatherReportException("No objects to display.");
         }
 
         Field[] fields = objects.get(0).getClass().getDeclaredFields();
         long realFieldsCount = Arrays.stream(fields)
-                .filter(f -> !f.isSynthetic()) // ignore synthetic fields
+                .filter(f -> !f.isSynthetic())
                 .count();
 
         if (realFieldsCount == 0) {
@@ -50,13 +51,13 @@ public class WeatherReportGenerator implements WeatherReportWriter {
                 .toArray(String[]::new);
     }
 
-    private String[][] extractRows(List<?> objects, Field[] fields) {
+    private String[][] extractRows(List<T> objects, Field[] fields) {
         return objects.stream()
                 .map(obj -> Arrays.stream(fields)
                         .map(f -> {
                             try {
-                                Object val = FieldUtils.readField(f, obj, true); // read private fields
-                                return val != null ? val.toString() : "null";
+                                Object val = FieldUtils.readField(f, obj, true);
+                                return val != null ? val.toString() : "N/A";
                             } catch (IllegalAccessException e) {
                                 throw new WeatherReportException(
                                         "Cannot read field " + f.getName(), e);

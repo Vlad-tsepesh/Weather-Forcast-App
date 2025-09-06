@@ -15,7 +15,6 @@ class WeatherForecastMapperTest {
 
     @Test
     void toWeatherData_mapsAllFieldsCorrectly() {
-        // Setup DTO
         WeatherForecastResponse.HourInfo hourInfoDto = new WeatherForecastResponse.HourInfo();
         hourInfoDto.windDir = "N";
 
@@ -36,10 +35,8 @@ class WeatherForecastMapperTest {
         WeatherForecastResponse responseDto = new WeatherForecastResponse();
         responseDto.forecast = forecastDto;
 
-        // Map to domain
         WeatherData weatherData = mapper.toWeatherData(forecastDto);
 
-        // Assertions
         assertNotNull(weatherData);
         assertEquals(1, weatherData.getForecastDays().size());
 
