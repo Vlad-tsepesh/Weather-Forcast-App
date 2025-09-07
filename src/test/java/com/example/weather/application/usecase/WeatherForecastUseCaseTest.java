@@ -26,7 +26,7 @@ class WeatherForecastUseCaseTest {
     @Mock
     private WeatherReportBuilder reportBuilder;
     @Mock
-    private WeatherReportWriter reportWriter;
+    private WeatherReportWriter<WeatherReportRow> reportWriter;
     @InjectMocks
     private WeatherForecastUseCase useCase;
 
