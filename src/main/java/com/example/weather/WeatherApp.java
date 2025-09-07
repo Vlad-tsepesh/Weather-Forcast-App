@@ -1,44 +1,28 @@
 package com.example.weather;
 
-import com.example.weather.model.WeatherData;
-import com.example.weather.service.WeatherService;
-
-import java.time.LocalDate;
-import java.util.List;
+import com.example.weather.application.port.WeatherForecastProvider;
+import com.example.weather.application.port.WeatherReportWriter;
+import com.example.weather.application.usecase.WeatherForecastUseCase;
+import com.example.weather.domain.model.WeatherReportRow;
+import com.example.weather.domain.service.WeatherReportBuilder;
+import com.example.weather.domain.service.WindAnalyzer;
+import com.example.weather.infrastructure.api.WeatherApiClient;
+import com.example.weather.infrastructure.config.RetrofitFactory;
+import com.example.weather.infrastructure.config.WeatherConfig;
+import com.example.weather.infrastructure.mapper.WeatherForecastMapper;
+import com.example.weather.infrastructure.output.WeatherReportGenerator;
 
 public class WeatherApp {
-    private static final List<String> CITIES = List.of("Chisinau", "Madrid", "Kyiv", "Amsterdam");
-
     public static void main(String[] args) {
-        String apiKey = System.getenv("WEATHER_API_KEY");
-        if (apiKey == null) {
-            System.err.println("Please set environment variable WEATHER_API_KEY");
-            return;
-        }
+        WeatherConfig config = new WeatherConfig();
+        WeatherForecastMapper mapper = WeatherForecastMapper.INSTANCE;
+        WeatherForecastProvider apiClient = new WeatherApiClient(config, RetrofitFactory.createWeatherApi(), mapper);
+        WindAnalyzer windAnalyzer = new WindAnalyzer();
+        WeatherReportBuilder reportBuilder = new WeatherReportBuilder(windAnalyzer);
+        WeatherReportWriter<WeatherReportRow> reportWriter = new WeatherReportGenerator<>();
+        WeatherForecastUseCase useCase = new WeatherForecastUseCase(apiClient, reportBuilder,reportWriter);
 
-        WeatherService service = new WeatherService(apiKey);
-        String tomorrow = LocalDate.now().plusDays(1).toString();
-
-
-        System.out.printf("%-12s | %-12s | %-12s | %-12s | %-12s | %-15s%n",
-                "City", "Date", "Min Temp (°C)", "Max Temp (°C)",
-                "Humidity (%)", "Wind (kph/dir)");
-        System.out.println("--------------------------------------------------------------------------------------");
-
-        for (String city : CITIES) {
-            WeatherData data = service.getForecast(city, tomorrow);
-            if (data != null) {
-                System.out.printf("%-12s | %-12s | %-12.1f | %-12.1f | %-12.1f | %.1f | %s%n",
-                        city, tomorrow,
-                        data.getMinTemp(),
-                        data.getMaxTemp(),
-                        data.getHumidity(),
-                        data.getWindSpeed(),
-                        data.getWindDir());
-            } else {
-                System.out.printf("%-12s | %-12s | %-12s | %-12s | %-12s | %-15s%n",
-                        city, tomorrow, "N/A", "N/A", "N/A", "N/A");
-            }
-        }
+        String weatherReport = useCase.runForecastForTomorrow(config.getCities());
+        System.out.println(weatherReport);
     }
 }
